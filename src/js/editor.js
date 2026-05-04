@@ -9,6 +9,24 @@ const Editor = (() => {
   let saveTimer = null;
   let eolMode = 'LF'; // 'LF' or 'CRLF'
 
+  let activePaneId = 'editor-content';
+  let isSplitView = false;
+  let activeNotes = {
+    'editor-content': null,
+    'editor-content-2': null
+  };
+
+  function getActiveEditor() {
+    return document.getElementById(activePaneId);
+  }
+
+  function getAllEditors() {
+    return [
+      document.getElementById('editor-content'),
+      document.getElementById('editor-content-2')
+    ].filter(Boolean);
+  }
+
   // ─── Syntax highlighting patterns per language ───────
   const SYNTAX = {
     javascript: {
@@ -98,9 +116,10 @@ const Editor = (() => {
     }
 
     if (!activeNoteId) activeNoteId = notes[0]?.id;
+    activeNotes['editor-content'] = activeNoteId;
 
     renderNoteTabs();
-    loadNoteContent(activeNoteId);
+    loadNoteContent('editor-content', activeNoteId);
     setupToolbar();
     setupCodeModal();
     setupEditorEvents();
@@ -137,8 +156,11 @@ const Editor = (() => {
     });
 
     sorted.forEach(note => {
+      const isActiveInAnyPane = Object.values(activeNotes).includes(note.id);
+      const isPrimaryActive = activeNotes[activePaneId] === note.id;
+      
       const tab = document.createElement('button');
-      tab.className = `note-tab ${note.id === activeNoteId ? 'active' : ''} ${note.pinned ? 'pinned' : ''}`;
+      tab.className = `note-tab ${isActiveInAnyPane ? 'active' : ''} ${isPrimaryActive ? 'primary-active' : ''} ${note.pinned ? 'pinned' : ''}`;
       tab.dataset.id = note.id;
       tab.draggable = true;
 
@@ -214,28 +236,35 @@ const Editor = (() => {
 
   function switchNote(id) {
     saveCurrentNote();
-    activeNoteId = id;
-    Storage.setActiveNoteId(id);
+    activeNotes[activePaneId] = id;
+    if (activePaneId === 'editor-content') {
+      activeNoteId = id; // update global fallback
+      Storage.setActiveNoteId(id);
+    }
     renderNoteTabs();
-    loadNoteContent(id);
+    loadNoteContent(activePaneId, id);
   }
 
-  function loadNoteContent(id) {
+  function loadNoteContent(paneId, id) {
     const note = notes.find(n => n.id === id);
-    const editor = document.getElementById('editor-content');
+    const editor = document.getElementById(paneId);
     if (note) {
       editor.innerHTML = note.content || '';
     }
   }
 
   function saveCurrentNote() {
-    const editor = document.getElementById('editor-content');
-    const note = notes.find(n => n.id === activeNoteId);
-    if (note) {
-      note.content = editor.innerHTML;
-      note.updatedAt = new Date().toISOString();
-      Storage.debouncedSave('notes', notes);
-      updateStatusBar();
+    getAllEditors().forEach(editor => {
+      const noteId = activeNotes[editor.id];
+      if (!noteId) return;
+      const note = notes.find(n => n.id === noteId);
+      if (note) {
+        note.content = editor.innerHTML;
+        note.updatedAt = new Date().toISOString();
+      }
+    });
+    Storage.debouncedSave('notes', notes);
+    updateStatusBar();
       // Brief "saved" indicator
       const el = document.getElementById('status-saved');
       if (el) { el.textContent = '✓ Salvo'; }
@@ -250,12 +279,16 @@ const Editor = (() => {
       content: ''
     };
     notes.push(newNote);
-    activeNoteId = newNote.id;
+    activeNotes[activePaneId] = newNote.id;
+    if (activePaneId === 'editor-content') {
+      activeNoteId = newNote.id;
+      Storage.setActiveNoteId(activeNoteId);
+    }
+    
     Storage.saveNotes(notes);
-    Storage.setActiveNoteId(activeNoteId);
     renderNoteTabs();
-    loadNoteContent(activeNoteId);
-    document.getElementById('editor-content').focus();
+    loadNoteContent(activePaneId, newNote.id);
+    getActiveEditor().focus();
     showToast('📝', 'Nova nota criada');
   }
 
@@ -267,10 +300,19 @@ const Editor = (() => {
     const idx = notes.findIndex(n => n.id === id);
     notes.splice(idx, 1);
 
-    if (id === activeNoteId) {
-      activeNoteId = notes[Math.max(0, idx - 1)]?.id;
-      Storage.setActiveNoteId(activeNoteId);
-      loadNoteContent(activeNoteId);
+    if (Object.values(activeNotes).includes(id)) {
+      // Find a safe fallback note
+      const fallbackId = notes[Math.max(0, idx - 1)]?.id;
+      if (activeNotes['editor-content'] === id) {
+        activeNotes['editor-content'] = fallbackId;
+        activeNoteId = fallbackId;
+        Storage.setActiveNoteId(activeNoteId);
+        loadNoteContent('editor-content', fallbackId);
+      }
+      if (activeNotes['editor-content-2'] === id) {
+        activeNotes['editor-content-2'] = fallbackId;
+        loadNoteContent('editor-content-2', fallbackId);
+      }
     }
 
     Storage.saveNotes(notes);
@@ -335,9 +377,10 @@ const Editor = (() => {
     });
 
     // Detect current heading at cursor and update select
-    const editor = document.getElementById('editor-content');
-    editor?.addEventListener('keyup', () => updateHeadingSelect(headSel));
-    editor?.addEventListener('mouseup', () => updateHeadingSelect(headSel));
+    getAllEditors().forEach(editor => {
+      editor?.addEventListener('keyup', () => updateHeadingSelect(headSel));
+      editor?.addEventListener('mouseup', () => updateHeadingSelect(headSel));
+    });
 
     // Add note button
     document.getElementById('btn-add-note')?.addEventListener('click', addNote);
@@ -376,7 +419,7 @@ const Editor = (() => {
     const div = document.createElement('div');
     div.className = 'checkbox-item';
     div.innerHTML = '<input type="checkbox" onchange="Editor.toggleCheckbox(this)"><span contenteditable="true">Nova tarefa</span>';
-    const editor = document.getElementById('editor-content');
+    const editor = getActiveEditor();
 
     const selection = window.getSelection();
     if (selection.rangeCount > 0) {
@@ -471,7 +514,7 @@ const Editor = (() => {
     wrapper.appendChild(header);
     wrapper.appendChild(content);
 
-    const editor = document.getElementById('editor-content');
+    const editor = getActiveEditor();
 
     // Insert at cursor or append
     const selection = window.getSelection();
@@ -543,49 +586,120 @@ const Editor = (() => {
     saveCurrentNote();
   }
 
-  // ─── Image Handling ──────────────────────────────────
+  // ─── Image Handling & Split View ─────────────────────
   function setupEditorEvents() {
-    const editor = document.getElementById('editor-content');
+    // Setup Split View
+    setupSplitView();
 
-    // Paste handler (images + text)
-    editor.addEventListener('paste', (e) => {
-      const items = e.clipboardData?.items;
-      if (!items) return;
+    getAllEditors().forEach(editor => {
+      // Focus tracking
+      editor.addEventListener('focus', () => {
+        activePaneId = editor.id;
+        document.querySelectorAll('.editor-pane').forEach(p => p.classList.remove('active'));
+        editor.closest('.editor-pane').classList.add('active');
+        renderNoteTabs();
+      });
 
-      for (const item of items) {
-        if (item.type.startsWith('image/')) {
-          e.preventDefault();
-          const file = item.getAsFile();
-          if (file) insertImageFromFile(file);
-          return;
+      // Paste handler (images + text)
+      editor.addEventListener('paste', (e) => {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+
+        for (const item of items) {
+          if (item.type.startsWith('image/')) {
+            e.preventDefault();
+            const file = item.getAsFile();
+            if (file) insertImageFromFile(file);
+            return;
+          }
         }
-      }
 
-      // Auto-save after text paste
-      setTimeout(saveCurrentNote, 100);
+        // Auto-save after text paste
+        setTimeout(saveCurrentNote, 100);
+      });
+
+      // Auto-save on input
+      editor.addEventListener('input', () => {
+        saveCurrentNote();
+      });
+
+      // Click on images to edit
+      editor.addEventListener('click', (e) => {
+        if (e.target.tagName === 'IMG') {
+          ImageEditor.open(e.target);
+        }
+        // Auto-link: make URLs clickable (Ctrl+Click)
+        if (e.target.tagName === 'A' && e.ctrlKey) {
+          e.preventDefault();
+          window.open(e.target.href, '_blank');
+        }
+      });
+    });
+  }
+
+  function setupSplitView() {
+    const btnSplit = document.getElementById('btn-split-view');
+    const pane2 = document.getElementById('editor-pane-2');
+    const divider = document.getElementById('editor-split-divider');
+    const container = document.getElementById('editor-split-container');
+    
+    if (!btnSplit || !pane2 || !divider || !container) return;
+
+    btnSplit.addEventListener('click', () => {
+      isSplitView = !isSplitView;
+      if (isSplitView) {
+        pane2.style.display = 'flex';
+        divider.style.display = 'block';
+        btnSplit.classList.add('active');
+        
+        // Carrega a mesma nota no segundo painel se estiver vazio
+        if (!activeNotes['editor-content-2']) {
+          activeNotes['editor-content-2'] = activeNotes['editor-content'];
+        }
+        loadNoteContent('editor-content-2', activeNotes['editor-content-2']);
+      } else {
+        pane2.style.display = 'none';
+        divider.style.display = 'none';
+        btnSplit.classList.remove('active');
+        activePaneId = 'editor-content';
+        document.getElementById('editor-pane-1').classList.add('active');
+      }
+      renderNoteTabs();
     });
 
-    // Auto-save on input
-    editor.addEventListener('input', () => {
-      saveCurrentNote();
+    // Resize logic
+    let isResizing = false;
+    divider.addEventListener('mousedown', (e) => {
+      isResizing = true;
+      divider.classList.add('dragging');
+      document.body.style.cursor = 'col-resize';
+      e.preventDefault();
     });
 
-    // Click on images to edit
-    editor.addEventListener('click', (e) => {
-      if (e.target.tagName === 'IMG') {
-        ImageEditor.open(e.target);
+    document.addEventListener('mousemove', (e) => {
+      if (!isResizing) return;
+      const containerRect = container.getBoundingClientRect();
+      const leftWidth = e.clientX - containerRect.left;
+      const percentage = (leftWidth / containerRect.width) * 100;
+      
+      if (percentage > 10 && percentage < 90) {
+        document.getElementById('editor-pane-1').style.flex = `0 0 ${percentage}%`;
+        document.getElementById('editor-pane-2').style.flex = '1';
       }
-      // Auto-link: make URLs clickable (Ctrl+Click)
-      if (e.target.tagName === 'A' && e.ctrlKey) {
-        e.preventDefault();
-        window.open(e.target.href, '_blank');
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (isResizing) {
+        isResizing = false;
+        divider.classList.remove('dragging');
+        document.body.style.cursor = 'default';
       }
     });
   }
 
   // ─── Auto-link URLs ──────────────────────────────────
   function autoLinkUrls() {
-    const editor = document.getElementById('editor-content');
+    getAllEditors().forEach(editor => {
     const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
     const urlRegex = /(https?:\/\/[^\s<>"']+)/g;
     const textNodes = [];
@@ -614,6 +728,7 @@ const Editor = (() => {
       });
       if (lastIdx < text.length) frag.appendChild(document.createTextNode(text.slice(lastIdx)));
       node.replaceWith(frag);
+    });
     });
   }
 
@@ -655,7 +770,7 @@ const Editor = (() => {
   }
 
   function highlightSearch(query) {
-    const editor = document.getElementById('editor-content');
+    const editor = getActiveEditor();
     const countEl = document.getElementById('search-count');
     clearHighlights();
 
@@ -730,7 +845,7 @@ const Editor = (() => {
 
   // ─── Status Bar ──────────────────────────────────────
   function updateStatusBar() {
-    const editor = document.getElementById('editor-content');
+    const editor = getActiveEditor();
     if (!editor) return;
 
     const text = editor.innerText || '';
@@ -751,7 +866,7 @@ const Editor = (() => {
       };
     }
 
-    const note = notes.find(n => n.id === activeNoteId);
+    const note = notes.find(n => n.id === activeNotes[activePaneId]);
     if (note?.updatedAt) {
       const d = new Date(note.updatedAt);
       document.getElementById('status-date').textContent = d.toLocaleDateString('pt-BR', {
@@ -775,7 +890,7 @@ const Editor = (() => {
       img.style.maxWidth = '100%';
       img.title = 'Clique para editar';
 
-      const editor = document.getElementById('editor-content');
+      const editor = getActiveEditor();
       const selection = window.getSelection();
 
       if (selection.rangeCount > 0 && editor.contains(selection.anchorNode)) {
