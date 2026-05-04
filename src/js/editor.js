@@ -268,7 +268,6 @@ const Editor = (() => {
       // Brief "saved" indicator
       const el = document.getElementById('status-saved');
       if (el) { el.textContent = '✓ Salvo'; }
-    }
   }
 
   function addNote() {
