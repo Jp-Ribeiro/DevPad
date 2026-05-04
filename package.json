@@ -9,11 +9,11 @@
     "build:linux": "electron-builder --linux",
     "build:all": "electron-builder --win --linux"
   },
-  "author": "JP",
+  "author": "Criado por JP-Ribeiro",
   "license": "MIT",
   "devDependencies": {
     "electron": "^33.0.0",
-    "electron-builder": "^25.0.0"
+    "electron-builder": "^26.8.1"
   },
   "build": {
     "appId": "com.devpad.app",
