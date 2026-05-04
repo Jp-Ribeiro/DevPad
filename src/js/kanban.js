@@ -16,6 +16,9 @@ const Kanban = (() => {
     setupDragAndDrop();
     setupModal();
     document.getElementById('btn-add-task')?.addEventListener('click', () => openModal());
+    
+    // Check task deadlines every 30 seconds
+    setInterval(checkDeadlines, 30000);
   }
 
   // ─── Render ──────────────────────────────────────────
@@ -40,10 +43,23 @@ const Kanban = (() => {
     card.dataset.id = task.id;
     card.dataset.column = column;
 
+    let dueDateHtml = '';
+    if (task.dueDate) {
+      const dt = new Date(task.dueDate);
+      const now = new Date();
+      const isPast = dt < now && column !== 'done';
+      const formatted = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+      dueDateHtml = `<div class="kanban-card-due" style="font-size: 11px; margin-top: 6px; color: ${isPast ? 'var(--danger)' : 'var(--text-muted)'}; display: flex; align-items: center; gap: 4px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        ${formatted} ${isPast ? '(Atrasado)' : ''}
+      </div>`;
+    }
+
     card.innerHTML = `
       <div class="kanban-card-priority ${task.priority || 'medium'}"></div>
       <div class="kanban-card-title">${escapeHtml(task.title)}</div>
       ${task.description ? `<div class="kanban-card-desc">${escapeHtml(task.description)}</div>` : ''}
+      ${dueDateHtml}
       <div class="kanban-card-actions">
         <button class="kanban-card-btn edit" title="Editar" onclick="Kanban.editTask('${task.id}', '${column}')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -128,6 +144,16 @@ const Kanban = (() => {
     btnCancel?.addEventListener('click', closeModal);
     overlay?.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
 
+    const hasDueDate = document.getElementById('task-has-due-date');
+    const dueDateContainer = document.getElementById('task-due-date-container');
+    const dueDateInput = document.getElementById('task-due-date-input');
+
+    hasDueDate?.addEventListener('change', (e) => {
+      if (dueDateContainer) {
+        dueDateContainer.style.display = e.target.checked ? 'block' : 'none';
+      }
+    });
+
     // Priority buttons
     document.querySelectorAll('.priority-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -145,6 +171,11 @@ const Kanban = (() => {
 
       const desc = document.getElementById('task-desc-input').value.trim();
       const priority = document.querySelector('.priority-btn.active')?.dataset.priority || 'medium';
+      
+      let dueDate = null;
+      if (hasDueDate?.checked) {
+        dueDate = dueDateInput.value;
+      }
 
       if (editingTaskId) {
         // Find and update task
@@ -154,6 +185,8 @@ const Kanban = (() => {
             task.title = title;
             task.description = desc;
             task.priority = priority;
+            task.dueDate = dueDate;
+            task.notified = false;
             break;
           }
         }
@@ -163,6 +196,8 @@ const Kanban = (() => {
           title,
           description: desc,
           priority,
+          dueDate,
+          notified: false,
           createdAt: new Date().toISOString()
         };
         data.todo.push(task);
@@ -206,6 +241,9 @@ const Kanban = (() => {
     const descInput = document.getElementById('task-desc-input');
     const deleteBtn = document.getElementById('task-modal-delete');
     const modalTitle = document.getElementById('task-modal-title');
+    const hasDueDate = document.getElementById('task-has-due-date');
+    const dueDateContainer = document.getElementById('task-due-date-container');
+    const dueDateInput = document.getElementById('task-due-date-input');
 
     if (taskId && column) {
       // Editing
@@ -217,6 +255,16 @@ const Kanban = (() => {
       titleInput.value = task.title;
       descInput.value = task.description || '';
       deleteBtn.classList.remove('hidden');
+
+      if (task.dueDate && hasDueDate) {
+        hasDueDate.checked = true;
+        dueDateInput.value = task.dueDate;
+        dueDateContainer.style.display = 'block';
+      } else if (hasDueDate) {
+        hasDueDate.checked = false;
+        dueDateInput.value = '';
+        dueDateContainer.style.display = 'none';
+      }
 
       // Set priority
       document.querySelectorAll('.priority-btn').forEach(b => {
@@ -232,6 +280,16 @@ const Kanban = (() => {
       document.querySelectorAll('.priority-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.priority === 'medium');
       });
+      
+      if (hasDueDate) {
+        hasDueDate.checked = false;
+        dueDateContainer.style.display = 'none';
+        // Default datetime: 1 hour from now
+        const now = new Date();
+        now.setHours(now.getHours() + 1);
+        now.setMinutes(0);
+        dueDateInput.value = now.toISOString().slice(0, 16);
+      }
     }
 
     overlay.classList.add('active');
@@ -249,6 +307,40 @@ const Kanban = (() => {
       Storage.saveKanban(data);
       render();
       showToast('🗑️', 'Tarefa excluída');
+    }
+  }
+
+  function checkDeadlines() {
+    const now = new Date();
+    let changed = false;
+    
+    // Only check 'todo' and 'doing'
+    ['todo', 'doing'].forEach(col => {
+      data[col].forEach(task => {
+        if (task.dueDate && !task.notified) {
+          if (new Date(task.dueDate) <= now) {
+            task.notified = true;
+            changed = true;
+            // Send notification
+            window.devpad?.showNotification?.({
+              title: '🔔 Prazo Esgotado!',
+              body: `A tarefa Kanban "${task.title}" atingiu o prazo final e não foi concluída.`
+            });
+            // Try to trigger global if IPC is available
+            if (window.ipcRenderer) {
+                window.ipcRenderer.send('show-notification', {
+                    title: '🔔 Prazo Esgotado!',
+                    body: `A tarefa Kanban "${task.title}" atingiu o prazo final e não foi concluída.`
+                });
+            }
+          }
+        }
+      });
+    });
+
+    if (changed) {
+      Storage.saveKanban(data);
+      render(); // Updates the UI to show red overdue text
     }
   }
 

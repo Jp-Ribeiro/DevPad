@@ -502,6 +502,16 @@
         <label class="modal-label">Descrição (opcional)</label>
         <textarea class="modal-textarea small" id="task-desc-input" placeholder="Detalhes da tarefa..."
           rows="3"></textarea>
+          
+        <div class="settings-group" style="margin: 10px 0; padding: 0;">
+          <label class="toggle-inline" style="font-size: 13px; font-weight: 500; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="task-has-due-date" style="accent-color: var(--accent); cursor: pointer;">
+            Tem Data Final (Prazo)?
+          </label>
+        </div>
+        <div id="task-due-date-container" style="display: none; margin-bottom: 12px;">
+          <input class="modal-input" id="task-due-date-input" type="datetime-local">
+        </div>
         <label class="modal-label">Prioridade</label>
         <div class="priority-selector" id="priority-selector">
           <button class="priority-btn" data-priority="low">🟢 Baixa</button>
