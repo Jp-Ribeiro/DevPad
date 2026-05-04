@@ -28,7 +28,7 @@ Para baixar, rodar e buildar (compilar) a aplicação, você precisará ter inst
 ---
 
 ## 📥 Como Baixar (Clonar)
-Abra o seu terminal (Prompt de Comando, PowerShell ou Terminal do Linux/Mac) no modo administrador e execute o comando abaixo para clonar o repositório:
+Abra o seu terminal (Prompt de Comando, PowerShell ou Terminal do Linux/Mac) no **modo administrador** e execute o comando abaixo para clonar o repositório:
 
 ```bash
 git clone https://github.com/Jp-Ribeiro/DevPad.git
