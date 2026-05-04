@@ -1,0 +1,528 @@
+/* ═══════════════════════════════════════════════════════════
+   EDITOR — DevPad
+   Note tabs, toolbar, content area, code blocks
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── Note Tabs Bar ────────────────────────────────────── */
+.note-tabs-bar {
+  display: flex;
+  align-items: center;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  height: 30px;
+  min-height: 30px;
+}
+
+.note-tabs {
+  display: flex;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.note-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.note-tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 10px;
+  height: 30px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  position: relative;
+}
+
+.note-tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.note-tab.active {
+  color: var(--text-primary);
+  border-bottom-color: var(--accent);
+  background: var(--bg-primary);
+}
+
+.note-tab-close {
+  width: 14px;
+  height: 14px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 3px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1;
+  transition: all var(--transition-fast);
+}
+
+.note-tab:hover .note-tab-close,
+.note-tab.active .note-tab-close {
+  display: flex;
+}
+
+.note-tab-close:hover {
+  background: var(--bg-active);
+  color: var(--danger);
+}
+
+.note-tab-add {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.note-tab-add svg {
+  width: 12px;
+  height: 12px;
+}
+
+.note-tab-add:hover {
+  color: var(--accent);
+  background: var(--bg-hover);
+}
+
+/* ─── Editor Toolbar ───────────────────────────────────── */
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 8px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  min-height: 32px;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+  margin: 0 4px;
+}
+
+.toolbar-btn {
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.toolbar-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.toolbar-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.toolbar-btn:active {
+  background: var(--bg-active);
+}
+
+.toolbar-btn-accent {
+  display: flex;
+  width: auto;
+  gap: 3px;
+  padding: 0 8px;
+  color: var(--accent);
+}
+
+.toolbar-btn-accent:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.toolbar-btn-label {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.toolbar-select {
+  height: 24px;
+  padding: 0 24px 0 6px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M5 7L1 3h8z' fill='%23888'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  transition: all var(--transition-fast);
+}
+
+.toolbar-select:focus {
+  border-color: var(--border-focus);
+}
+
+/* ─── Editor Content ───────────────────────────────────── */
+.editor-content {
+  flex: 1;
+  padding: 16px 22px;
+  overflow-y: auto;
+  outline: none;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-primary);
+  cursor: text;
+  background: var(--bg-primary);
+}
+
+.editor-content:empty::before {
+  content: 'Comece a digitar...';
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.editor-content p {
+  margin-bottom: 4px;
+}
+
+.editor-content h1 {
+  font-size: 1.8em;
+  font-weight: 700;
+  margin: 16px 0 8px;
+  color: var(--text-primary);
+}
+
+.editor-content h2 {
+  font-size: 1.4em;
+  font-weight: 600;
+  margin: 14px 0 6px;
+  color: var(--text-primary);
+}
+
+.editor-content h3 {
+  font-size: 1.15em;
+  font-weight: 600;
+  margin: 12px 0 4px;
+  color: var(--text-primary);
+}
+
+.editor-content strong {
+  font-weight: 600;
+}
+
+.editor-content ul, .editor-content ol {
+  padding-left: 24px;
+  margin: 4px 0;
+}
+
+.editor-content li {
+  margin: 2px 0;
+}
+
+.editor-content a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+/* ─── Code Blocks ──────────────────────────────────────── */
+.code-block-wrapper {
+  position: relative;
+  margin: 12px 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--bg-code);
+}
+
+.code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 10px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border);
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  user-select: none;
+}
+
+.code-block-header-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.code-block-header-btn {
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.code-block-header-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.code-block-header-btn svg {
+  width: 12px;
+  height: 12px;
+}
+
+.code-block-content {
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--text-primary);
+  tab-size: 2;
+}
+
+/* Syntax highlighting classes */
+.code-block-content .kw { color: var(--syntax-keyword); }
+.code-block-content .str { color: var(--syntax-string); }
+.code-block-content .num { color: var(--syntax-number); }
+.code-block-content .cmt { color: var(--syntax-comment); font-style: italic; }
+.code-block-content .fn { color: var(--syntax-function); }
+.code-block-content .var { color: var(--syntax-variable); }
+.code-block-content .type { color: var(--syntax-type); }
+.code-block-content .op { color: var(--syntax-operator); }
+
+/* ─── Inline Images ────────────────────────────────────── */
+.editor-content img {
+  max-width: 100%;
+  border-radius: var(--radius-md);
+  margin: 8px 0;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.editor-content img:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Checkbox items */
+.editor-content .checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+.editor-content .checkbox-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.editor-content .checkbox-item.checked span {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+/* ─── Pin Indicator ────────────────────────────────────── */
+.note-tab .pin-icon {
+  font-size: 9px;
+  opacity: 0.7;
+}
+
+.note-tab.pinned {
+  border-bottom-color: var(--accent);
+}
+
+.note-tab.dragging {
+  opacity: 0.4;
+}
+
+.note-tab.drag-over {
+  border-left: 2px solid var(--accent);
+}
+
+/* ─── Search Bar ───────────────────────────────────────── */
+.search-bar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 0 0 0 var(--radius-md);
+  box-shadow: var(--shadow-md);
+  z-index: 10;
+  animation: slideSearchIn 150ms ease;
+}
+
+@keyframes slideSearchIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.search-bar svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.search-bar input {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  outline: none;
+  width: 200px;
+}
+
+.search-bar input::placeholder {
+  color: var(--text-muted);
+}
+
+.search-count {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.search-close {
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all var(--transition-fast);
+}
+
+.search-close:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* ─── Status Bar ───────────────────────────────────────── */
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 22px;
+  padding: 0 12px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.status-left, .status-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-divider {
+  opacity: 0.4;
+}
+
+.status-saved {
+  color: var(--text-muted);
+}
+
+.status-clickable {
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 0 3px;
+  transition: all var(--transition-fast);
+}
+
+.status-clickable:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+/* ─── Focus Mode ───────────────────────────────────────── */
+body.focus-mode .sidebar,
+body.focus-mode .note-tabs-bar,
+body.focus-mode .editor-toolbar,
+body.focus-mode .status-bar {
+  display: none !important;
+}
+
+body.focus-mode .app-container {
+  height: 100vh;
+}
+
+body.focus-mode .editor-content {
+  padding: 40px 60px;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+/* ─── Search Highlight ─────────────────────────────────── */
+.search-highlight {
+  background: rgba(255, 213, 0, 0.35);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.search-highlight.active {
+  background: rgba(255, 213, 0, 0.7);
+  outline: 1px solid #ffd500;
+}

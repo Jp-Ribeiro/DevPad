@@ -1,0 +1,182 @@
+/* ═══════════════════════════════════════════════════════════
+   NEON EFFECTS — DevPad
+   Glow, pulsing, and neon animations
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── Neon Glow Keyframes ─────────────────────────────── */
+@keyframes neonPulse {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--neon-cyan, transparent),
+                0 0 15px rgba(0, 255, 204, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 8px var(--neon-cyan, transparent),
+                0 0 25px rgba(0, 255, 204, 0.35);
+  }
+}
+
+@keyframes neonTextPulse {
+  0%, 100% {
+    text-shadow: 0 0 5px var(--neon-cyan, transparent);
+  }
+  50% {
+    text-shadow: 0 0 12px var(--neon-cyan, transparent),
+                 0 0 20px rgba(0, 255, 204, 0.3);
+  }
+}
+
+@keyframes neonBorderPulse {
+  0%, 100% {
+    border-color: rgba(0, 255, 204, 0.3);
+  }
+  50% {
+    border-color: rgba(0, 255, 204, 0.6);
+  }
+}
+
+@keyframes glowLine {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ─── Dev Glow Theme Specific ─────────────────────────── */
+[data-theme="dev-glow"] .titlebar {
+  border-bottom: 1px solid rgba(0, 255, 204, 0.15);
+}
+
+[data-theme="dev-glow"] .titlebar-icon {
+  filter: drop-shadow(0 0 4px rgba(0, 255, 204, 0.6));
+}
+
+[data-theme="dev-glow"] .titlebar-title {
+  text-shadow: 0 0 8px rgba(0, 255, 204, 0.4);
+  color: var(--neon-cyan);
+}
+
+[data-theme="dev-glow"] .sidebar {
+  border-right: 1px solid rgba(0, 255, 204, 0.1);
+}
+
+[data-theme="dev-glow"] .sidebar-tab.active {
+  color: var(--neon-cyan);
+  text-shadow: 0 0 8px var(--neon-cyan);
+}
+
+[data-theme="dev-glow"] .sidebar-tab.active svg {
+  filter: drop-shadow(0 0 4px var(--neon-cyan));
+}
+
+[data-theme="dev-glow"] .sidebar-tab.active::before {
+  background: var(--neon-cyan);
+  box-shadow: 0 0 8px var(--neon-cyan),
+              0 0 16px rgba(0, 255, 204, 0.4);
+}
+
+[data-theme="dev-glow"] .sidebar-tab:hover {
+  background: rgba(0, 255, 204, 0.05);
+}
+
+/* Neon border on content */
+[data-theme="dev-glow"] body {
+  border-color: rgba(0, 255, 204, 0.15);
+  box-shadow: 0 0 30px rgba(0, 255, 204, 0.05),
+              inset 0 0 30px rgba(0, 255, 204, 0.02);
+}
+
+/* Neon note tabs */
+[data-theme="dev-glow"] .note-tab.active {
+  border-bottom-color: var(--neon-cyan);
+  text-shadow: 0 0 6px rgba(0, 255, 204, 0.5);
+}
+
+/* Neon toolbar */
+[data-theme="dev-glow"] .editor-toolbar {
+  border-bottom: 1px solid rgba(0, 255, 204, 0.1);
+  background: linear-gradient(180deg, rgba(0, 255, 204, 0.03) 0%, transparent 100%);
+}
+
+/* Neon scrollbar */
+[data-theme="dev-glow"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 204, 0.2);
+}
+
+[data-theme="dev-glow"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 204, 0.4);
+  box-shadow: 0 0 4px var(--neon-cyan);
+}
+
+/* Kanban glow */
+[data-theme="dev-glow"] .kanban-column {
+  border: 1px solid rgba(0, 255, 204, 0.08);
+}
+
+[data-theme="dev-glow"] .dot-todo {
+  box-shadow: 0 0 6px var(--neon-purple), 0 0 12px rgba(191, 90, 242, 0.3);
+}
+
+[data-theme="dev-glow"] .dot-doing {
+  box-shadow: 0 0 6px var(--neon-yellow, #ffd60a), 0 0 12px rgba(255, 214, 10, 0.3);
+}
+
+[data-theme="dev-glow"] .dot-done {
+  box-shadow: 0 0 6px var(--neon-green, #30d158), 0 0 12px rgba(48, 209, 88, 0.3);
+}
+
+[data-theme="dev-glow"] .kanban-card:hover {
+  border-color: rgba(0, 255, 204, 0.3);
+  box-shadow: 0 0 15px rgba(0, 255, 204, 0.08);
+}
+
+/* Settings glow */
+[data-theme="dev-glow"] .settings-panel {
+  border-left: 1px solid rgba(0, 255, 204, 0.15);
+  box-shadow: -4px 0 30px rgba(0, 255, 204, 0.05);
+}
+
+/* Modal glow */
+[data-theme="dev-glow"] .modal {
+  border: 1px solid rgba(0, 255, 204, 0.15);
+  box-shadow: 0 0 40px rgba(0, 255, 204, 0.08),
+              0 25px 60px rgba(0, 0, 0, 0.6);
+}
+
+/* Code block glow */
+[data-theme="dev-glow"] .code-block-wrapper {
+  border: 1px solid rgba(0, 255, 204, 0.15);
+  box-shadow: 0 0 15px rgba(0, 255, 204, 0.05),
+              inset 0 0 30px rgba(0, 255, 204, 0.02);
+}
+
+/* Input focus glow */
+[data-theme="dev-glow"] .modal-input:focus,
+[data-theme="dev-glow"] .modal-textarea:focus,
+[data-theme="dev-glow"] .modal-select:focus {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 8px rgba(0, 255, 204, 0.2),
+              0 0 20px rgba(0, 255, 204, 0.1);
+}
+
+/* Slider glow */
+[data-theme="dev-glow"] .settings-slider::-webkit-slider-thumb {
+  box-shadow: 0 0 8px var(--neon-cyan),
+              0 0 20px rgba(0, 255, 204, 0.3);
+}
+
+/* Toggle glow */
+[data-theme="dev-glow"] .toggle-switch input:checked + .toggle-slider {
+  background: var(--neon-cyan);
+  box-shadow: 0 0 10px var(--neon-cyan),
+              0 0 25px rgba(0, 255, 204, 0.3);
+}
+
+/* Toast glow */
+[data-theme="dev-glow"] .toast {
+  border: 1px solid rgba(0, 255, 204, 0.2);
+  box-shadow: 0 0 20px rgba(0, 255, 204, 0.1);
+}
+
+/* Reminder card glow */
+[data-theme="dev-glow"] .reminder-card:hover {
+  border-color: rgba(0, 255, 204, 0.25);
+  box-shadow: 0 0 15px rgba(0, 255, 204, 0.08);
+}

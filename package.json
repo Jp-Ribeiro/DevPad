@@ -1,0 +1,46 @@
+{
+  "name": "devpad",
+  "version": "1.0.0",
+  "description": "DevPad — Bloco de notas tunado para devs. Leve, simples e funcional.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win",
+    "build:linux": "electron-builder --linux",
+    "build:all": "electron-builder --win --linux"
+  },
+  "author": "JP",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.devpad.app",
+    "productName": "DevPad",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "src/assets/icons/icon.ico"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "src/assets/icons/icon.png",
+      "category": "Utility"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "node_modules/**/*"
+    ]
+  },
+  "dependencies": {
+    "electron-store": "^8.2.0"
+  }
+}
