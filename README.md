@@ -1,6 +1,6 @@
 # 🚀 DevPad
 
-O **DevPad** é um bloco de notas tunado e focado no dia a dia do desenvolvedor. Ele é uma aplicação desktop leve, rápida e recheada de funcionalidades que ajudam a organizar tarefas, ideias, trechos de código e anotações gerais.
+O **DevPad** é um bloco de notas tunado e focado no seu dia a dia. Ele é uma aplicação desktop leve, rápida e recheada de funcionalidades que ajudam a organizar tarefas, ideias, trechos de código e anotações gerais.
 
 ## 🌟 O que a aplicação faz?
 O DevPad foi criado para ser o seu assistente pessoal de produtividade na tela do PC. Ele inclui as seguintes ferramentas:
@@ -28,7 +28,7 @@ Para baixar, rodar e buildar (compilar) a aplicação, você precisará ter inst
 ---
 
 ## 📥 Como Baixar (Clonar)
-Abra o seu terminal (Prompt de Comando, PowerShell ou Terminal do Linux/Mac) e execute o comando abaixo para clonar o repositório:
+Abra o seu terminal (Prompt de Comando, PowerShell ou Terminal do Linux/Mac) no modo administrador e execute o comando abaixo para clonar o repositório:
 
 ```bash
 git clone https://github.com/Jp-Ribeiro/DevPad.git
